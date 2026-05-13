@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -25,10 +25,14 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const letter = data?.content?.[0]?.text;
-    if (!letter) return res.status(500).json({ error: 'Réponse vide' });
+    const text = data?.content?.[0]?.text;
+    if (!text) return res.status(500).json({ error: 'Réponse vide' });
 
-    return res.status(200).json({ letter });
+    // Parse JSON retourné par le modèle
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    return res.status(200).json(parsed);
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
