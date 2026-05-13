@@ -3,48 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Générateur de candidatures — Noah Puget</title>
+<title>Candidatures — Noah Puget</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #1a1a1a; padding: 20px; }
-  .container { max-width: 680px; margin: 0 auto; }
+  .container { max-width: 700px; margin: 0 auto; }
   h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
   .sub { font-size: 13px; color: #666; margin-bottom: 24px; }
+
   .tracker { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
   .tracker-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
   .tracker-num { font-size: 28px; font-weight: 700; }
   .progress { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: #2563eb; border-radius: 3px; transition: width 0.4s; }
   .tracker-sub { font-size: 12px; color: #888; margin-top: 6px; }
+
   .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+
   .type-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
   .type-btn { padding: 10px 6px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; font-weight: 500; text-align: center; color: #444; transition: all 0.15s; }
-  .type-btn.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; border-width: 2px; }
+  .type-btn.active { border: 2px solid #2563eb; background: #eff6ff; color: #2563eb; }
+
   label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 500; }
   input, textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 9px 12px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.15s; }
   input:focus, textarea:focus { border-color: #2563eb; }
   textarea { resize: vertical; min-height: 70px; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .field { margin-bottom: 12px; }
+
   .btn-primary { width: 100%; padding: 11px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
   .btn-primary:hover { background: #1d4ed8; }
   .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
-  .btn-secondary { padding: 8px 14px; background: #fff; color: #444; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  .btn-copy { padding: 6px 14px; background: #fff; color: #444; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .btn-copy:hover { border-color: #999; }
+  .btn-mark { width: 100%; margin-top: 10px; padding: 9px; background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .btn-danger { padding: 3px 8px; background: #fff; color: #dc2626; border: 1px solid #fca5a5; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
   .error { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; }
   .loading { color: #666; font-size: 13px; margin-top: 14px; display: none; align-items: center; gap: 8px; }
-  .spinner { width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
   .result { margin-top: 20px; display: none; }
-  .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .result-header span { font-size: 14px; font-weight: 600; }
-  .letter-box { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; max-height: 420px; overflow-y: auto; color: #222; }
-  .btn-mark { width: 100%; margin-top: 8px; padding: 9px; background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+  .result-block { margin-bottom: 16px; }
+  .result-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .result-block-title { font-size: 14px; font-weight: 600; }
+  .result-block-label { font-size: 11px; color: #888; margin-left: 6px; font-weight: 400; }
+
+  .content-box { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; color: #222; max-height: 340px; overflow-y: auto; }
+  .mail-box { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; color: #1e3a5f; max-height: 200px; overflow-y: auto; }
+
+  .divider { border: none; border-top: 1px solid #e0e0e0; margin: 16px 0; }
+
   .sent-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; margin-bottom: 6px; }
   .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
   .badge-app { background: #eff6ff; color: #2563eb; }
   .badge-stage { background: #f0fdf4; color: #16a34a; }
   .badge-job { background: #fefce8; color: #ca8a04; }
-  .btn-danger { padding: 3px 8px; background: #fff; color: #dc2626; border: 1px solid #fca5a5; border-radius: 6px; font-size: 12px; cursor: pointer; }
   .section-title { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
 </style>
 </head>
@@ -79,25 +95,47 @@
         <input id="city" type="text" placeholder="Ex: Annecy, Rumilly..." />
       </div>
     </div>
-    <div class="field">
-      <label>Secteur d'activité</label>
-      <input id="sector" type="text" placeholder="Ex: impression 3D, industrie mécanique..." />
+    <div class="field-row">
+      <div>
+        <label>Secteur d'activité</label>
+        <input id="sector" type="text" placeholder="Ex: impression 3D, industrie..." />
+      </div>
+      <div>
+        <label>Email du recruteur (optionnel)</label>
+        <input id="recruiter-email" type="email" placeholder="rh@entreprise.fr" />
+      </div>
     </div>
     <div class="field">
       <label>Infos sur l'entreprise (optionnel)</label>
-      <textarea id="info" placeholder="Colle ici des infos trouvées sur leur site pour personnaliser..."></textarea>
+      <textarea id="info" placeholder="Quelques infos trouvées sur leur site pour personnaliser..."></textarea>
     </div>
 
-    <button class="btn-primary" id="gen-btn" onclick="generate()">⚡ Générer la lettre</button>
+    <button class="btn-primary" id="gen-btn" onclick="generate()">⚡ Générer la lettre + le mail</button>
     <div class="error" id="err-box"></div>
     <div class="loading" id="load-box"><div class="spinner"></div> Génération en cours...</div>
 
     <div class="result" id="result-box">
-      <div class="result-header">
-        <span>Lettre générée ✓</span>
-        <button class="btn-secondary" onclick="copyLetter()">📋 Copier</button>
+
+      <!-- MAIL -->
+      <div class="result-block">
+        <div class="result-block-header">
+          <span class="result-block-title">📧 Texte du mail <span class="result-block-label">— à coller dans le corps du mail</span></span>
+          <button class="btn-copy" onclick="copyContent('mail-content', this)">Copier</button>
+        </div>
+        <div class="mail-box" id="mail-content"></div>
       </div>
-      <div class="letter-box" id="letter-content"></div>
+
+      <hr class="divider">
+
+      <!-- LETTRE -->
+      <div class="result-block">
+        <div class="result-block-header">
+          <span class="result-block-title">📄 Lettre de motivation <span class="result-block-label">— à joindre en PDF</span></span>
+          <button class="btn-copy" onclick="copyContent('letter-content', this)">Copier</button>
+        </div>
+        <div class="content-box" id="letter-content"></div>
+      </div>
+
       <button class="btn-mark" onclick="markSent()">✅ Marquer comme envoyée</button>
     </div>
   </div>
@@ -114,9 +152,9 @@ let sentItems = [];
 try { sentItems = JSON.parse(localStorage.getItem('noah_cand') || '[]'); } catch(e) {}
 
 const CV = `Noah Puget, 16 ans (bientôt 17), Vaulx 74150, np.pro4@gmail.com, +33 7 87 14 69 92, nationalité franco-suisse.
-FORMATION: 1ère pro Modélisation et Prototypage 3D (MP3D) au lycée Amédée Gordini à Seynod (74). Logiciels maîtrisés: SolidWorks, Cura.
-EXPÉRIENCES: CDI boulangerie Fier et Croustillant depuis août 2025 (vente, mise en rayon, confection); SNU maison de retraite Chambéry (40h bénévolat, assistance résidents); stage architecture studio Florent Mako Ville-la-Grand (2 semaines); logistique et installation cuisines Bulthaup Genève (réception, contrôle qualité, coordination); confection pâtisseries boulangerie Aix-les-Bains.
-POINTS FORTS: proactif, méticuleux, polyvalent, bon esprit d'équipe, sportif.`;
+FORMATION: 1ère pro Modélisation et Prototypage 3D (MP3D) au lycée Amédée Gordini à Seynod (74). Logiciels: SolidWorks, Cura.
+EXPÉRIENCES: CDI boulangerie depuis août 2025; SNU bénévolat maison de retraite; stage architecture 2 semaines; logistique Bulthaup Genève; confection pâtisseries.
+POINTS FORTS: proactif, méticuleux, polyvalent, bon esprit d'équipe.`;
 
 function setType(t) {
   selectedType = t;
@@ -128,10 +166,13 @@ function setType(t) {
 async function generate() {
   document.getElementById('err-box').style.display = 'none';
   document.getElementById('result-box').style.display = 'none';
+
   const company = document.getElementById('company').value.trim();
   const city = document.getElementById('city').value.trim();
   const sector = document.getElementById('sector').value.trim();
   const info = document.getElementById('info').value.trim();
+  const email = document.getElementById('recruiter-email').value.trim();
+
   if (!company) { showErr("Entre le nom de l'entreprise."); return; }
 
   const typeLabel = {
@@ -143,7 +184,7 @@ async function generate() {
   document.getElementById('gen-btn').disabled = true;
   document.getElementById('load-box').style.display = 'flex';
 
-  const prompt = `Rédige une lettre de motivation professionnelle en français pour Noah Puget.
+  const prompt = `Tu dois générer deux choses pour une candidature de Noah Puget.
 
 PROFIL:
 ${CV}
@@ -155,14 +196,28 @@ CANDIDATURE:
 - Type: ${typeLabel}
 ${info ? '- Infos entreprise: ' + info : ''}
 
-CONSIGNES:
-- Commence directement par "Madame, Monsieur,"
-- 3-4 paragraphes: présentation/formation, motivation pour cette entreprise, compétences, formule de politesse
-- Job d'été: valorise disponibilité, polyvalence, expérience boulangerie/logistique
-- Stage/apprentissage: met en avant SolidWorks, Cura, modélisation 3D, formation MP3D
-- Personnalise avec le nom de l'entreprise et son secteur
-- Termine par "Veuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\n\nNoah PUGET"
-- 200-230 mots, ton professionnel`;
+GÉNÈRE exactement ce JSON (rien d'autre, pas de markdown):
+{
+  "mail": "...",
+  "lettre": "..."
+}
+
+RÈGLES POUR LE MAIL (champ "mail"):
+- Court, 4-5 lignes max
+- Objet non inclus (juste le corps)
+- Commence par "Madame, Monsieur,"
+- Présente Noah en 1 phrase, mentionne le type de candidature, dit qu'il joint CV + lettre
+- Termine par une formule courte et "Noah Puget"
+- Ne pas répéter ce qui est dans la lettre
+
+RÈGLES POUR LA LETTRE (champ "lettre"):
+- Lettre complète et professionnelle
+- Commence par "Madame, Monsieur,"
+- 3-4 paragraphes: formation/profil, motivation pour cette entreprise, compétences apportées, formule de politesse
+- ${selectedType === 'job' ? 'Job été: valorise disponibilité, polyvalence, sérieux, expérience terrain' : 'Stage/apprentissage: insiste sur SolidWorks, Cura, modélisation 3D, MP3D'}
+- Personnalise avec le nom exact de l'entreprise et son secteur
+- Termine par "Veuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\\n\\nNoah PUGET"
+- 200-220 mots`;
 
   try {
     const res = await fetch('/api/generate', {
@@ -175,11 +230,14 @@ CONSIGNES:
       throw new Error(err?.error || 'Erreur serveur ' + res.status);
     }
     const data = await res.json();
-    if (!data.letter) throw new Error('Réponse vide.');
-    document.getElementById('letter-content').textContent = data.letter;
+    if (!data.mail || !data.lettre) throw new Error('Réponse incomplète.');
+
+    document.getElementById('mail-content').textContent = data.mail;
+    document.getElementById('letter-content').textContent = data.lettre;
     document.getElementById('result-box').style.display = 'block';
     document.getElementById('result-box').dataset.company = company;
     document.getElementById('result-box').dataset.city = city;
+
   } catch(e) {
     showErr('Erreur : ' + e.message);
   }
@@ -193,9 +251,12 @@ function showErr(msg) {
   b.textContent = msg; b.style.display = 'block';
 }
 
-function copyLetter() {
-  navigator.clipboard.writeText(document.getElementById('letter-content').textContent)
-    .then(() => alert('Lettre copiée !'));
+function copyContent(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copié !';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
 }
 
 function markSent() {
