@@ -51,7 +51,7 @@ nav{height:72px;display:flex;align-items:center;justify-content:space-between;bo
 
 <section class="section">
 <h2>Un compte sans infrastructure inutile.</h2>
-<p class="intro">Pour la version personnelle, le profil est enregistré dans le navigateur. Tu peux utiliser AutoCandidat gratuitement sans créer de compte serveur.</p>
+<p class="intro">Pour la version personnelle, le profil est enregistré dans le navigateur. Un cookie local identifie simplement la session ; les données restent sur ton appareil. Tu peux utiliser AutoCandidat gratuitement sans créer de compte serveur.</p>
 <div class="cards">
 <div class="card"><b>01</b><h3>Ton profil</h3><p>Une page dédiée pour modifier tes informations à tout moment.</p></div>
 <div class="card"><b>02</b><h3>Ta recherche</h3><p>Un questionnaire court avec uniquement les critères réellement utiles.</p></div>
@@ -69,7 +69,7 @@ nav{height:72px;display:flex;align-items:center;justify-content:space-between;bo
 <div class="field"><label>Niveau de classe</label><input id="pLevel" placeholder="Ex. Seconde, Première, Terminale, Bac+1"></div>
 <div class="field"><label>Ville</label><input id="pCity" placeholder="Ex. Toulouse, Lille, Lyon, Strasbourg"></div>
 <div class="field"><label>Type d'emploi recherché</label><select id="pType"><option>Stage</option><option>Alternance</option><option>Premier emploi</option></select></div>
-<div class="field wide"><label>Moyen de transport</label><div class="choices" id="pTransport"><button data-v="Voiture">🚗 Voiture</button><button data-v="Bus">🚌 Bus</button><button data-v="Vélo">🚲 Vélo</button><button data-v="À pied">🚶 À pied</button></div></div>
+<div class="field"><label>Temps de trajet maximum</label><select id="pTravel"><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 h</option><option value="90">1 h 30</option></select></div><div class="field wide"><label>Moyen de transport</label><div class="choices" id="pTransport"><button data-v="Voiture">🚗 Voiture</button><button data-v="Bus">🚌 Bus</button><button data-v="Vélo">🚲 Vélo</button><button data-v="À pied">🚶 À pied</button></div></div>
 </div>
 <div class="profile-actions"><button class="secondary" onclick="resetProfile()">Effacer les données locales</button><button class="primary" onclick="saveProfile()">Enregistrer le profil</button></div>
 </div>
@@ -85,14 +85,14 @@ nav{height:72px;display:flex;align-items:center;justify-content:space-between;bo
 <div class="field"><label>Niveau de classe</label><input id="qLevel" placeholder="Ex. Seconde, Première, Terminale, Bac+2"></div>
 <div class="field"><label>Ville</label><input id="qCity" placeholder="Ex. Nantes, Bordeaux, Marseille, Rennes"></div>
 <div class="field"><label>Type d'emploi recherché</label><select id="qType"><option>Stage</option><option>Alternance</option><option>Premier emploi</option></select></div>
-<div class="field wide"><label>Moyen de transport</label><div class="choices" id="qTransport"><button data-v="Voiture">🚗 Voiture</button><button data-v="Bus">🚌 Bus</button><button data-v="Vélo">🚲 Vélo</button><button data-v="À pied">🚶 À pied</button></div></div>
+<div class="field"><label>Temps de trajet maximum</label><select id="qTravel"><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 h</option><option value="90">1 h 30</option></select></div><div class="field wide"><label>Moyen de transport</label><div class="choices" id="qTransport"><button data-v="Voiture">🚗 Voiture</button><button data-v="Bus">🚌 Bus</button><button data-v="Vélo">🚲 Vélo</button><button data-v="À pied">🚶 À pied</button></div></div>
 </div>
 <div class="footerbar"><span class="hint">Aucune connexion à Supabase nécessaire.</span><button class="primary" onclick="saveQuestionnaire()">Voir les opportunités →</button></div>
 </div>
 
 <div id="q2" class="hidden">
-<div class="stats"><div class="stat"><b id="resultCount">0</b><span>exemples disponibles</span></div><div class="stat"><b id="profileMatch">100%</b><span>profil renseigné</span></div><div class="stat"><b>LOCAL</b><span>données navigateur</span></div></div>
-<div class="form-card"><div id="companyList"></div><div class="footerbar"><button class="secondary" onclick="setQuestionStep(1)">← Modifier</button><button class="primary" onclick="saveSelection()">Enregistrer ma sélection</button></div></div>
+<div class="stats"><div class="stat"><b id="resultCount">0</b><span>entreprises enregistrées</span></div><div class="stat"><b id="profileMatch">100%</b><span>profil renseigné</span></div><div class="stat"><b>LOCAL</b><span>données navigateur</span></div></div>
+<div class="form-card"><div class="add-company"><input id="newCompanyName" placeholder="Nom de l’entreprise"><input id="newCompanyCity" placeholder="Ville"><input id="newCompanyEmail" placeholder="Email de candidature (optionnel)"><button class="primary" onclick="addCompany()">+ Ajouter</button></div><div id="companyList"></div><div class="footerbar"><button class="secondary" onclick="setQuestionStep(1)">← Modifier</button><button class="primary" onclick="saveSelection()">Enregistrer ma sélection</button></div></div>
 </div>
 </section>
 
@@ -101,16 +101,15 @@ nav{height:72px;display:flex;align-items:center;justify-content:space-between;bo
 <div class="toast" id="toast"></div>
 
 <script>
-const KEY='autocandidat_local_v2';
-const demoCompanies=[
-['Studio Pixel','Paris','Design / création'],['NovaTech','Lyon','Technologie'],['Atelier Horizon','Bordeaux','Architecture / design'],['Maison Atlas','Lille','Commerce / services'],['BlueLab','Nantes','Innovation / numérique'],['Forma Conseil','Rennes','Conseil / gestion'],['Hexa Industrie','Toulouse','Industrie'],['Lumen Studio','Strasbourg','Communication'],['Orion Solutions','Montpellier','Informatique'],['Alpine Works','Grenoble','Ingénierie'],['Atelier 21','Dijon','Artisanat / création'],['NextGen Services','Rouen','Services']
-];
+const KEY='autocandidat_local_v3';
 let data=load();
 let transport=data.transport||'Voiture';
 let selected=new Set(data.selected||[]);
+function ensureSession(){if(!document.cookie.includes('autocandidat_session='))document.cookie='autocandidat_session=local; max-age=31536000; path=/; SameSite=Lax'}
+ensureSession();
 
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
-function persist(){data.transport=transport;data.selected=[...selected];localStorage.setItem(KEY,JSON.stringify(data))}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));return Object.assign({companies:[],applications:[]},x||{})}catch(e){return {companies:[],applications:[]}}}
+function persist(){data.transport=transport;data.selected=[...selected];data.companies=data.companies||[];data.applications=data.applications||[];localStorage.setItem(KEY,JSON.stringify(data))}
 function initials(){const f=(data.formation||'').trim();return f?f[0].toUpperCase():'?'}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function setTransport(rootId,current){document.querySelectorAll('#'+rootId+' button').forEach(b=>{b.classList.toggle('active',b.dataset.v===current);b.onclick=()=>{document.querySelectorAll('#'+rootId+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active');transport=b.dataset.v}})}
@@ -118,15 +117,19 @@ function showHome(){['profile','app'].forEach(x=>document.getElementById(x).styl
 function showProfile(){document.getElementById('home').style.display='none';document.getElementById('app').style.display='none';document.getElementById('profile').style.display='block';fillProfile();window.scrollTo(0,0)}
 function showApp(){document.getElementById('home').style.display='none';document.getElementById('profile').style.display='none';document.getElementById('app').style.display='block';fillQuestionnaire();setQuestionStep(1);window.scrollTo(0,0)}
 function startQuestionnaire(){showApp()}
-function fillProfile(){pFormation.value=data.formation||'';pLevel.value=data.level||'';pCity.value=data.city||'';pType.value=data.type||'Stage';setTransport('pTransport',data.transport||'Voiture');profileAvatar.textContent=initials();profileName.textContent=data.formation||'Mon profil';profileSummary.textContent=[data.level,data.city,data.type].filter(Boolean).join(' · ')||'Complète ton profil pour commencer.';navAvatar.textContent=initials()}
-function saveProfile(){data.formation=pFormation.value.trim();data.level=pLevel.value.trim();data.city=pCity.value.trim();data.type=pType.value;data.transport=transport;persist();fillProfile();toast('Profil enregistré sur cet appareil.')}
+function fillProfile(){pFormation.value=data.formation||'';pLevel.value=data.level||'';pCity.value=data.city||'';pType.value=data.type||'Stage';pTravel.value=data.travel||'30';setTransport('pTransport',data.transport||'Voiture');profileAvatar.textContent=initials();profileName.textContent=data.formation||'Mon profil';profileSummary.textContent=[data.level,data.city,data.type].filter(Boolean).join(' · ')||'Complète ton profil pour commencer.';navAvatar.textContent=initials()}
+function saveProfile(){data.formation=pFormation.value.trim();data.level=pLevel.value.trim();data.city=pCity.value.trim();data.type=pType.value;data.travel=pTravel.value;data.transport=transport;persist();fillProfile();toast('Profil enregistré sur cet appareil.')}
 function resetProfile(){localStorage.removeItem(KEY);data={};transport='Voiture';selected.clear();fillProfile();setTransport('pTransport','Voiture');toast('Données locales effacées.')}
-function fillQuestionnaire(){qFormation.value=data.formation||'';qLevel.value=data.level||'';qCity.value=data.city||'';qType.value=data.type||'Stage';setTransport('qTransport',data.transport||'Voiture')}
-function saveQuestionnaire(){if(!qFormation.value.trim()||!qLevel.value.trim()||!qCity.value.trim()){toast('Remplis les 3 informations obligatoires.');return}data.formation=qFormation.value.trim();data.level=qLevel.value.trim();data.city=qCity.value.trim();data.type=qType.value;data.transport=transport;persist();renderCompanies();setQuestionStep(2)}
-function setQuestionStep(n){q1.classList.toggle('hidden',n!==1);q2.classList.toggle('hidden',n!==2);bar.style.width=(n===1?'50%':'100%');appTitle.textContent=n===1?'Ton questionnaire':'Les opportunités';appSub.textContent=n===1?'Six informations. C’est tout.':'Exemples neutres pour tester le parcours.'}
-function renderCompanies(){const html=demoCompanies.map((c,i)=>'<div class="company"><input type="checkbox" '+(selected.has(c[0])?'checked':'')+' onchange="toggleCompany('+i+')"><div><h3>'+c[0]+'</h3><p>'+c[1]+' · '+c[2]+'</p></div><span class="match">'+(100-i*3)+'% compatible</span></div>').join('');companyList.innerHTML=html;resultCount.textContent=demoCompanies.length}
-function toggleCompany(i){const k=demoCompanies[i][0];selected.has(k)?selected.delete(k):selected.add(k);persist()}
-function saveSelection(){persist();toast(selected.size+' opportunité(s) enregistrée(s) localement.')}
-setTransport('qTransport',transport);setTransport('pTransport',transport);fillProfile();navAvatar.textContent=initials();
+function fillQuestionnaire(){qFormation.value=data.formation||'';qLevel.value=data.level||'';qCity.value=data.city||'';qType.value=data.type||'Stage';qTravel.value=data.travel||'30';setTransport('qTransport',data.transport||'Voiture')}
+function saveQuestionnaire(){if(!qFormation.value.trim()||!qLevel.value.trim()||!qCity.value.trim()){toast('Remplis les 3 informations obligatoires.');return}data.formation=qFormation.value.trim();data.level=qLevel.value.trim();data.city=qCity.value.trim();data.type=qType.value;data.travel=qTravel.value;data.transport=transport;persist();renderCompanies();setQuestionStep(2)}
+function setQuestionStep(n){q1.classList.toggle('hidden',n!==1);q2.classList.toggle('hidden',n!==2);bar.style.width=(n===1?'50%':'100%');appTitle.textContent=n===1?'Ton questionnaire':'Les entreprises';appSub.textContent=n===1?'Formation, ville, trajet et mobilité.':'Aucune entreprise fictive : ajoute tes vraies cibles.'}
+function renderCompanies(){const companies=data.companies||[];if(!companies.length){companyList.innerHTML='<div style="padding:28px;text-align:center;border:1px dashed #303030;border-radius:14px;color:#777">Aucune entreprise enregistrée.<br><small>Ajoute une entreprise réelle pour activer « Postuler ».</small></div>';resultCount.textContent='0';return}const html=companies.map((c,i)=>{const app=(data.applications||[]).find(a=>a.companyId===c.id);const status=app?app.status:'À contacter';return '<div class="company"><input type="checkbox" '+(selected.has(c.id)?'checked':'')+' onchange="toggleCompany('+i+')"><div><h3>'+escapeHtml(c.name)+'</h3><p>'+escapeHtml(c.city||'Ville non renseignée')+' · '+(c.email?escapeHtml(c.email):'email non renseigné')+'</p></div><div class="company-actions"><select class="status-select" onchange="setApplicationStatus('+i+',this.value)"><option '+(status==='À contacter'?'selected':'')+'>À contacter</option><option '+(status==='Candidature préparée'?'selected':'')+'>Candidature préparée</option><option '+(status==='Envoyée'?'selected':'')+'>Envoyée</option><option '+(status==='Réponse reçue'?'selected':'')+'>Réponse reçue</option></select><button class="secondary" onclick="applyTo('+i+')">Postuler</button></div></div>'}).join('');companyList.innerHTML=html;resultCount.textContent=companies.length}
+function escapeHtml(v){return String(v||'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
+function addCompany(){const name=newCompanyName.value.trim(),city=newCompanyCity.value.trim(),email=newCompanyEmail.value.trim();if(!name||!city){toast('Nom et ville sont obligatoires.');return}const c={id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),name,city,email};data.companies=data.companies||[];data.companies.push(c);persist();newCompanyName.value='';newCompanyCity.value='';newCompanyEmail.value='';renderCompanies();toast('Entreprise ajoutée.')}
+function toggleCompany(i){const k=data.companies[i].id;selected.has(k)?selected.delete(k):selected.add(k);persist()}
+function setApplicationStatus(i,status){const c=data.companies[i];data.applications=data.applications||[];let a=data.applications.find(x=>x.companyId===c.id);if(!a){a={companyId:c.id,status};data.applications.push(a)}else a.status=status;persist();toast('Suivi mis à jour.')}
+function applyTo(i){const c=data.companies[i];if(!c.email){toast('Aucun email renseigné pour cette entreprise.');return}const subject=encodeURIComponent((data.type||'Candidature')+' — '+(data.formation||''));const body=encodeURIComponent('Bonjour,\n\nJe souhaite vous proposer ma candidature pour un '+(data.type||'poste')+'.\n\nFormation : '+(data.formation||'')+'\nNiveau : '+(data.level||'')+'\nVille : '+(data.city||'')+'\nMobilité : '+(data.transport||'')+'\nTemps de trajet maximum : '+(data.travel||'30')+' minutes\n\nCordialement.');window.location.href='mailto:'+encodeURIComponent(c.email)+'?subject='+subject+'&body='+body;setApplicationStatus(i,'Candidature préparée')}
+function saveSelection(){persist();toast(selected.size+' entreprise(s) sélectionnée(s) localement.')}
+setTransport('qTransport',transport);setTransport('pTransport',transport);fillProfile();navAvatar.textContent=initials();renderCompanies();
 </script>
 </body></html>
